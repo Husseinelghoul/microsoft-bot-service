@@ -12,6 +12,9 @@ from botbuilder.core import (
     BotFrameworkAdapterSettings,
     TurnContext,
     BotFrameworkAdapter,
+    ConversationState,
+    MemoryStorage,
+    UserState
 )
 from botbuilder.core.integration import aiohttp_error_middleware
 from botbuilder.schema import Activity, ActivityTypes
@@ -25,6 +28,10 @@ CONFIG = DefaultConfig()
 # See https://aka.ms/about-bot-adapter to learn more about how bots work.
 SETTINGS = BotFrameworkAdapterSettings(CONFIG.APP_ID, CONFIG.APP_PASSWORD)
 ADAPTER = BotFrameworkAdapter(SETTINGS)
+# Create MemoryStorage and state
+MEMORY = MemoryStorage()
+USER_STATE = UserState(MEMORY)
+CONVERSATION_STATE = ConversationState(MEMORY)
 
 
 # Catch-all for errors.
@@ -58,7 +65,7 @@ async def on_error(context: TurnContext, error: Exception):
 ADAPTER.on_turn_error = on_error
 
 # Create the Bot
-BOT = mainBot(CONFIG)
+BOT = mainBot(CONFIG, CONVERSATION_STATE, USER_STATE)
 
 
 # Listen for incoming requests on /api/messages

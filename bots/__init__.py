@@ -3,4 +3,4 @@
 
 from .mainBot import mainBot
 
-__all__ = ["QnABot"]
+__all__ = ["mainBot"]
