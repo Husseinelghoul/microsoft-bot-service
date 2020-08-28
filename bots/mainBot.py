@@ -3,7 +3,7 @@
 
 from botbuilder.ai.qna import QnAMaker, QnAMakerEndpoint
 from botbuilder.core import ActivityHandler, MessageFactory, TurnContext
-from botbuilder.schema import ChannelAccount
+from botbuilder.schema import ChannelAccount, CardAction, ActionTypes, SuggestedActions
 from .customPrompt import *
 from config import DefaultConfig
 from botbuilder.core import (
@@ -13,6 +13,7 @@ from botbuilder.core import (
     UserState,
     MessageFactory,
 )
+
 
 class mainBot(ActivityHandler):
     def __init__(self, config: DefaultConfig, conversation_state: ConversationState, user_state: UserState,promptInput = False):
@@ -41,10 +42,30 @@ class mainBot(ActivityHandler):
     async def on_members_added_activity(self, members_added: [ChannelAccount], turn_context: TurnContext):
         for member in members_added:
             if member.id != turn_context.activity.recipient.id:
+                #Welcome message
                 await turn_context.send_activity(
-                    "Welcome to the QnA Maker sample! Ask me a question and I will try "
+                    "Welcome to  GlobeMed Bot, Ask me a question and I will try "
                     "to answer it."
                 )
+                """
+                Create and sends an activity with suggested actions to the user. When the user
+                clicks one of the buttons the text value from the "CardAction" will be displayed
+                in the channel just as if the user entered the text. There are multiple
+                "ActionTypes" that may be used for different situations.
+                """
+                reply = MessageFactory.text('''Alternatively I can help you finding a healthcare provider,
+                                            booking an appointment, checking your claim status and I could show you our products and services.''')
+                reply.suggested_actions = SuggestedActions(
+                    actions=[
+                        CardAction(title="Healthcare Provider", type=ActionTypes.im_back, value="[HP]"),
+                        CardAction(title="Products and Services", type=ActionTypes.im_back, value="[PS]"),
+                        CardAction(title="Book an Appoitment", type=ActionTypes.im_back, value="[BA]"),
+                        CardAction(title="Claim Status",type=ActionTypes.im_back, value="[CS]")
+                    ]
+                )
+                await turn_context.send_activity(reply)
+                
+                
     async def on_message_activity(self, turn_context: TurnContext):
         if (
             turn_context.activity.attachments
@@ -55,7 +76,7 @@ class mainBot(ActivityHandler):
             await self.handle_user_msg(turn_context)           
     async def handle_user_msg(self, turn_context: TurnContext):
         msg = turn_context.activity.text
-        if msg == "test" or self.promptInput:
+        if msg == "[BA]" or self.promptInput:
             self.promptInput = True
                 # Get the state properties from the turn context.
             profile = await self.profile_accessor.get(turn_context, UserProfile)
@@ -143,7 +164,7 @@ class mainBot(ActivityHandler):
                 profile.date = validate_result.value
                 await turn_context.send_activity(
                     MessageFactory.text(
-                        f"Your cab meeting is scheduled for {profile.date}."
+                        f"Your meeting is scheduled for {profile.date}."
                     )
                 )
                 await turn_context.send_activity(
