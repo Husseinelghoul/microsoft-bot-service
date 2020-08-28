@@ -8,7 +8,8 @@ class Question(Enum):
     NAME = 1
     AGE = 2
     DATE = 3
-    NONE = 4
+    PHONENUM = 4
+    NONE = 5
 
 
 class ConversationFlow:

@@ -99,8 +99,7 @@ class mainBot(ActivityHandler):
                     MessageFactory.text("How old are you?")
                 )
                 flow.last_question_asked = Question.AGE
-
-        # validate age then ask for date
+        # validate age then ask for phone number
         elif flow.last_question_asked == Question.AGE:
             validate_result = validate_age(user_input)
             if not validate_result.is_valid:
@@ -113,7 +112,23 @@ class mainBot(ActivityHandler):
                     MessageFactory.text(f"I have your age as {profile.age}.")
                 )
                 await turn_context.send_activity(
-                    MessageFactory.text("When is your flight?")
+                    MessageFactory.text("What's your phone number?")
+                )
+                flow.last_question_asked = Question.PHONENUM
+        # validate phone number then ask for date
+        elif flow.last_question_asked == Question.PHONENUM:
+            validate_result = validate_phoneNum(user_input)
+            if not validate_result.is_valid:
+                await turn_context.send_activity(
+                    MessageFactory.text(validate_result.message)
+                )
+            else:
+                profile.phoneNum = validate_result.value
+                await turn_context.send_activity(
+                    MessageFactory.text(f"I have your phone number as {profile.phoneNum}")
+                )
+                await turn_context.send_activity(
+                    MessageFactory.text("When would you like to have your meeting?")
                 )
                 flow.last_question_asked = Question.DATE
 
@@ -128,16 +143,15 @@ class mainBot(ActivityHandler):
                 profile.date = validate_result.value
                 await turn_context.send_activity(
                     MessageFactory.text(
-                        f"Your cab ride to the airport is scheduled for {profile.date}."
+                        f"Your cab meeting is scheduled for {profile.date}."
                     )
                 )
                 await turn_context.send_activity(
                     MessageFactory.text(
-                        f"Thanks for completing the booking {profile.name}."
+                        f"Thanks for completing your reservation {profile.name}."
                     )
                 )
-                await turn_context.send_activity(
-                    MessageFactory.text("Type anything to run the bot again.")
-                )
+                #TODO: Implement SQL Logic
+                print(profile.name,profile.date,profile.age,profile.phoneNum)
                 flow.last_question_asked = Question.NONE
                 self.promptInput = False
