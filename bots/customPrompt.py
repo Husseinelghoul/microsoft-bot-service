@@ -73,7 +73,7 @@ def validate_date(user_input: str) -> ValidationResult:
                     if diff.total_seconds() >= 3600:
                         return ValidationResult(
                             is_valid=True,
-                            value=candidate.strftime("%m/%d/%y"),
+                            value=candidate.strftime("%y-%m-%d"),
                         )
 
         return ValidationResult(

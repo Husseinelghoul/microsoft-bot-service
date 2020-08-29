@@ -13,8 +13,16 @@ from botbuilder.core import (
     UserState,
     MessageFactory,
 )
+from .healthcare import *
+from .productsAndServices import *
+import mysql.connector
 
-
+mydb = mysql.connector.connect(
+  host= DefaultConfig.DB_ENDPOINT_HOST,
+  user =DefaultConfig.DB_ENDPOINT_USER,
+  password= DefaultConfig.DB_ENDPOINT_PSSWD,
+  database= DefaultConfig.DB_NAME
+)
 class mainBot(ActivityHandler):
     def __init__(self, config: DefaultConfig, conversation_state: ConversationState, user_state: UserState,promptInput = False):
         self.qna_maker = QnAMaker(
@@ -57,15 +65,13 @@ class mainBot(ActivityHandler):
                                             booking an appointment, checking your claim status and I could show you our products and services.''')
                 reply.suggested_actions = SuggestedActions(
                     actions=[
-                        CardAction(title="Healthcare Provider", type=ActionTypes.im_back, value="[HP]"),
+                        CardAction(title="Healthcare Providers", type=ActionTypes.im_back, value="[HP]"),
                         CardAction(title="Products and Services", type=ActionTypes.im_back, value="[PS]"),
                         CardAction(title="Book an Appoitment", type=ActionTypes.im_back, value="[BA]"),
                         CardAction(title="Claim Status",type=ActionTypes.im_back, value="[CS]")
                     ]
                 )
-                await turn_context.send_activity(reply)
-                
-                
+                await turn_context.send_activity(reply)            
     async def on_message_activity(self, turn_context: TurnContext):
         if (
             turn_context.activity.attachments
@@ -87,6 +93,10 @@ class mainBot(ActivityHandler):
             # Save changes to UserState and ConversationState
             await self.conversation_state.save_changes(turn_context)
             await self.user_state.save_changes(turn_context)
+        elif msg in HPlist:
+            await HP_display_options(turn_context,msg)
+        elif msg in productsList or msg in servicesList:
+            await PS_display_options(turn_context,msg)
         else:
             # The QnA Maker service.
             response = await self.qna_maker.get_answers(turn_context)
@@ -173,6 +183,11 @@ class mainBot(ActivityHandler):
                     )
                 )
                 #TODO: Implement SQL Logic
-                print(profile.name,profile.date,profile.age,profile.phoneNum)
+                mycursor = mydb.cursor()
+                sql = "INSERT INTO appointments (name, age, phoneNum, date) VALUES (%s, %s, %s, %s)"
+                val=(profile.name,profile.age,profile.phoneNum,profile.date)
+                mycursor.execute(sql, val)
+                mydb.commit()
+                mydb.close()
                 flow.last_question_asked = Question.NONE
                 self.promptInput = False
