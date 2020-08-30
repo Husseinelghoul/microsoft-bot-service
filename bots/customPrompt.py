@@ -87,12 +87,9 @@ def validate_date(user_input: str) -> ValidationResult:
             "date. Please enter a date at least an hour out.",
         )
 def validate_phoneNum(user_input: str) -> ValidationResult:
-    results = recognize_number(user_input, Culture.English)
-    for result in results:
-        if "value" in result.resolution:
-            phoneNum = result.resolution["value"]
-            if (phoneNum[:2] in ["03","76","81","71","70"]) and (len(phoneNum) == 8):
-                return ValidationResult(is_valid=True, value=phoneNum)
+    phoneNum = user_input
+    if (phoneNum[:2] in ["03","76","81","71","70"]) and (len(phoneNum) == 8):
+        return ValidationResult(is_valid=True, value=phoneNum)
     return ValidationResult(
         is_valid=False, message="Your phone number should contain 8 numbers and start with 03, 70, 71, 66 or 81"
     )

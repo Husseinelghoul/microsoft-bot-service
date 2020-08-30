@@ -5,6 +5,7 @@ from botbuilder.ai.qna import QnAMaker, QnAMakerEndpoint
 from botbuilder.core import ActivityHandler, MessageFactory, TurnContext
 from botbuilder.schema import ChannelAccount, CardAction, ActionTypes, SuggestedActions
 from .customPrompt import *
+from .claim_prompt import *
 from config import DefaultConfig
 from botbuilder.core import (
     ActivityHandler,
@@ -17,14 +18,16 @@ from .healthcare import *
 from .productsAndServices import *
 import mysql.connector
 
-mydb = mysql.connector.connect(
+def createSQL():
+    mydb = mysql.connector.connect(
   host= DefaultConfig.DB_ENDPOINT_HOST,
   user =DefaultConfig.DB_ENDPOINT_USER,
   password= DefaultConfig.DB_ENDPOINT_PSSWD,
-  database= DefaultConfig.DB_NAME
-)
+  database= DefaultConfig.DB_NAME)
+    return mydb
+
 class mainBot(ActivityHandler):
-    def __init__(self, config: DefaultConfig, conversation_state: ConversationState, user_state: UserState,promptInput = False):
+    def __init__(self, config: DefaultConfig, conversation_state: ConversationState, user_state: UserState, promptInput = False,getClaim = False):
         self.qna_maker = QnAMaker(
             QnAMakerEndpoint(
                 knowledge_base_id=config.QNA_KNOWLEDGEBASE_ID,
@@ -33,6 +36,7 @@ class mainBot(ActivityHandler):
             )
         )
         self.promptInput = promptInput
+        self.getClaim = getClaim
         if conversation_state is None:
             raise TypeError(
                 "[CustomPromptBot]: Missing parameter. conversation_state is required but None was given"
@@ -90,6 +94,16 @@ class mainBot(ActivityHandler):
 
             await self._fill_out_user_profile(flow, profile, turn_context)
 
+            # Save changes to UserState and ConversationState
+            await self.conversation_state.save_changes(turn_context)
+            await self.user_state.save_changes(turn_context)
+        elif msg == "[CS]" or self.getClaim:
+            self.getClaim = True
+            # Get the state properties from the turn context.
+            profile = await self.profile_accessor.get(turn_context, ClientProfile)
+            flow = await self.flow_accessor.get(turn_context, ClaimConversationFlow)
+
+            await self._fill_out_client_profile(flow, profile, turn_context)
             # Save changes to UserState and ConversationState
             await self.conversation_state.save_changes(turn_context)
             await self.user_state.save_changes(turn_context)
@@ -182,12 +196,71 @@ class mainBot(ActivityHandler):
                         f"Thanks for completing your reservation {profile.name}."
                     )
                 )
-                #TODO: Implement SQL Logic
+                #Add the appointment details to database
+                mydb = createSQL()
                 mycursor = mydb.cursor()
                 sql = "INSERT INTO appointments (name, age, phoneNum, date) VALUES (%s, %s, %s, %s)"
                 val=(profile.name,profile.age,profile.phoneNum,profile.date)
                 mycursor.execute(sql, val)
                 mydb.commit()
-                mydb.close()
                 flow.last_question_asked = Question.NONE
+                
+                mydb.close()
                 self.promptInput = False
+    async def _fill_out_client_profile(self, flow: ClaimConversationFlow, profile: ClientProfile, turn_context: TurnContext):
+        user_input = turn_context.activity.text.strip()
+        # ask for claim number
+        if flow.last_question_asked == ClaimQuestion.NONE:
+            await turn_context.send_activity(
+                MessageFactory.text("Let's get started. What is your claim number?")
+            )
+            flow.last_question_asked = ClaimQuestion.CLAIMNO
+
+        # validate claim number then ask for card number
+        elif flow.last_question_asked == ClaimQuestion.CLAIMNO:
+            validate_result = validate_claimno(user_input)
+            if not validate_result.is_valid:
+                await turn_context.send_activity(
+                    MessageFactory.text(validate_result.message)
+                )
+            else:
+                profile.claimno = int(validate_result.value)
+                await turn_context.send_activity(
+                    MessageFactory.text(f"I have your claim number as {profile.claimno}")
+                )
+                await turn_context.send_activity(
+                    MessageFactory.text("What is your card number?")
+                )
+                flow.last_question_asked = ClaimQuestion.CARDNO
+        # validate card number and wrap it up
+        elif flow.last_question_asked == ClaimQuestion.CARDNO:
+            validate_result = validate_cardno(user_input,profile.claimno)
+            if not validate_result.is_valid:
+                await turn_context.send_activity(
+                    MessageFactory.text(validate_result.message)
+                )
+            else:
+                profile.cardno = validate_result.value
+                profile.name = getName(profile.cardno)
+                profile.status = getStatus(profile.claimno)
+                profile.description = getDescription(profile.claimno)
+                profile.ETA = getETA(profile.claimno)
+                await turn_context.send_activity(
+                    MessageFactory.text(
+                        f"Hello {profile.name} !"
+                    )
+                )
+                await turn_context.send_activity(
+                    MessageFactory.text(
+                        f"Your claim status is \"{profile.status}.\""
+                        f"The claim description is --> {profile.description}"
+                    )
+                )
+                if not profile.ETA==0:
+                    await turn_context.send_activity(
+                    MessageFactory.text(
+                        f"The estimated time for your claim to be setteled is {profile.ETA} working days."
+                    )
+                )
+                flow.last_question_asked = Question.NONE
+                self.getClaim = False

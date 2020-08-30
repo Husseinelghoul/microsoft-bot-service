@@ -11,7 +11,6 @@ class Question(Enum):
     PHONENUM = 4
     NONE = 5
 
-
 class ConversationFlow:
     def __init__(
         self, last_question_asked: Question = Question.NONE,
