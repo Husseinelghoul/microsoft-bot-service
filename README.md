@@ -1,10 +1,6 @@
-# QnA Maker
+# Insurance company ChatBot
 
-Bot Framework v4 QnA Maker bot sample
-
-This bot has been created using [Bot Framework](https://dev.botframework.com), it shows how to create a bot that uses the [QnA Maker Cognitive AI](https://www.qnamaker.ai) service.
-
-The [QnA Maker Service](https://www.qnamaker.ai) enables you to build, train and publish a simple question and answer bot based on FAQ URLs, structured documents or editorial content in minutes. In this sample, we demonstrate how to use the QnA Maker service to answer questions based on a FAQ text file used as input.
+This bot has been created using [Bot Framework](https://dev.botframework.com).
 
 ## Prerequisites
 
@@ -12,11 +8,12 @@ This samples **requires** prerequisites in order to run.
 
 ### Overview
 
-This bot uses [QnA Maker Service](https://www.qnamaker.ai), an AI based cognitive service, to implement simple Question and Answer conversational patterns.
+This bot answers client's questions using [QnA Maker Service](https://www.qnamaker.ai), this bot get appointments for clients and saves it in a mysql database hosted on [heroku.com](https://heroku.com). It also informs clients about products and services of [GlobMed Lebanon](globemedlebanon.com/) insurance company and the healthcare providers that are associated with the company. The ChatBot could also check the database to inform clients about their claims.
 
-### Create a QnAMaker Application to enable QnA Knowledge Bases
+### Link the bot to the QnA knowledge base and database
 
-QnA knowledge base setup and application configuration steps can be found [here](https://aka.ms/qna-instructions).
+In order to run the bot properly, you will need the configuration file that contains the database and knowledge base credentials.
+this file should be named **config.py** and placed in the repository main directory.
 
 ## Running the sample
 - Clone the repository
@@ -26,7 +23,7 @@ git clone https://github.com/Microsoft/botbuilder-samples.git
 - Bring up a terminal, navigate to `botbuilder-samples\samples\python\11.qnamaker` folder
 - Activate your desired virtual environment
 - In the terminal, type `pip install -r requirements.txt`
-- Update `QNA_KNOWLEDGEBASE_ID`, `QNA_ENDPOINT_KEY`, and `QNA_ENDPOINT_HOST` in `config.py`
+- Add the `config.py` file
 - Run your bot with `python app.py`
 
 ## Testing the bot using Bot Framework Emulator
@@ -38,12 +35,6 @@ git clone https://github.com/Microsoft/botbuilder-samples.git
 - Launch Bot Framework Emulator
 - File -> Open Bot
 - Paste this URL in the emulator window - http://localhost:3978/api/messages
-
-## QnA Maker service
-
-QnA Maker enables you to power a question and answer service from your semi-structured content.
-
-One of the basic requirements in writing your own bot is to seed it with questions and answers. In many cases, the questions and answers already exist in content like FAQ URLs/documents, product manuals, etc. With QnA Maker, users can query your application in a natural, conversational manner. QnA Maker uses machine learning to extract relevant question-answer pairs from your content. It also uses powerful matching and ranking algorithms to provide the best possible match between the user query and the questions.
 
 ## Deploy the bot to Azure
 
