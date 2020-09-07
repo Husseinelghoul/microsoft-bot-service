@@ -107,10 +107,13 @@ class mainBot(ActivityHandler):
             # Save changes to UserState and ConversationState
             await self.conversation_state.save_changes(turn_context)
             await self.user_state.save_changes(turn_context)
-        elif msg in HPlist:
+        elif msg == "[HP]":
             await HP_display_options(turn_context,msg)
         elif msg in productsList or msg in servicesList:
             await PS_display_options(turn_context,msg)
+        elif msg in HPlist:
+            await getProvider(turn_context,msg)
+            
         else:
             # The QnA Maker service.
             response = await self.qna_maker.get_answers(turn_context)
