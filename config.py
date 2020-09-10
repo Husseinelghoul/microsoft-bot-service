@@ -11,8 +11,8 @@ class DefaultConfig:
     """ Bot Configuration """
 
     PORT = 3978
-    APP_ID = os.environ.get("MicrosoftAppId", "2a374f94-a34a-45c4-8877-0ea9c6a8835d")
-    APP_PASSWORD = os.environ.get("MicrosoftAppPassword", "uXVJFfsR1J~zh7QXT.kk9777zP-uz.azHA")
+    APP_ID = os.environ.get("MicrosoftAppId", "39f7dc55-7782-4bc5-8543-6db615485789")
+    APP_PASSWORD = os.environ.get("MicrosoftAppPassword", "nv5gH~11YgE_KLsZpqR55IApQzB6I-t~__")
     QNA_KNOWLEDGEBASE_ID = os.environ.get("QnAKnowledgebaseId", "24bed8e8-7bd7-47e1-9461-b80cc5011a51")
     QNA_ENDPOINT_KEY = os.environ.get("QnAEndpointKey", "e074dd5e-82a1-4065-9724-21f9b0cb758c")
     QNA_ENDPOINT_HOST = os.environ.get("QnAEndpointHostName", "https://globemedbot-poc.azurewebsites.net/qnamaker")
