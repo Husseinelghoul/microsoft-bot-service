@@ -7,7 +7,7 @@ import os
 class DefaultConfig:
     """ Bot Configuration """
 
-    PORT = 3978
+    PORT = 8000
     APP_ID = os.environ.get("MicrosoftAppId", "0bc99f6b-7b4c-4e06-b0f7-1478dc20b3e7")
     APP_PASSWORD = os.environ.get("MicrosoftAppPassword", "wzuXy7W4di8IW4.NC2Zb3_x~R_N3t7J4Ft")
     QNA_KNOWLEDGEBASE_ID = os.environ.get("QnAKnowledgebaseId", "24bed8e8-7bd7-47e1-9461-b80cc5011a51")
