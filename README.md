@@ -8,7 +8,7 @@ This samples **requires** prerequisites in order to run.
 
 ### Overview
 
-This bot answers client's questions using [QnA Maker Service](https://www.qnamaker.ai), this bot get appointments for clients and saves it in a mysql database hosted on [heroku.com](https://heroku.com). It also informs clients about products and services of [GlobMed Lebanon](globemedlebanon.com/) insurance company and the healthcare providers that are associated with the company. The ChatBot could also check the database to inform clients about their claims.
+This bot answers client's questions using [QnA Maker Service](https://www.qnamaker.ai), this bot get appointments for clients and saves it in a mysql database hosted on [heroku.com](https://heroku.com). It also informs clients about products and services of [GlobMed Lebanon](globemedlebanon.com/) insurance company and the healthcare providers that are associated with the company, in addition it uses [Google Places API] (https://cloud.google.com/maps-platform/places/). The ChatBot could also check the database to inform clients about their claims.
 
 ### Link the bot to the QnA knowledge base and database
 
