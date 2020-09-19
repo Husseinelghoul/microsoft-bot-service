@@ -147,7 +147,7 @@ def create_thumbnail_card(mylist) -> Attachment:
         card = ThumbnailCard(
             title=mylist[0],
             subtitle=mylist[1],
-            text = "Ratings: {} ({} ratings) \n\n opening hours: {}".format(mylist[3],mylist[4],mylist[2]),
+            text = "Rating: {} ({} ratings) \n\n Availability: {}".format(mylist[3],mylist[4],mylist[2]),
             images=[
                 CardImage(
                     url=mylist[6]

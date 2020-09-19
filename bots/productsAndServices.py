@@ -9,14 +9,7 @@ from botbuilder.schema import (
     Activity,
     ActionTypes,
 )
-import mysql.connector
-from config import DefaultConfig
-mydb = mysql.connector.connect(
-  host= DefaultConfig.DB_ENDPOINT_HOST,
-  user =DefaultConfig.DB_ENDPOINT_USER,
-  password= DefaultConfig.DB_ENDPOINT_PSSWD,
-  database= DefaultConfig.DB_NAME
-)
+from .products_dictionary import *
 productsList = ["[PS]","[PRODUCTS]","[IAF]","[IP]","[GROUPS]","[SP]","[TP]","[MUP]","[TPP]","[DNP]","[TMP]","[NSOP]","[TPCP]","[TEP]"]
 servicesList = ["[SERVICES]","[IHS]","[HBM]","[PBM]","[ACTUARIAL]","[PUMA]","[AAA]","[ESMP]","[TIP]","[IPMI]","[PM]","[MSM]","[DDM]","[SM]","[ASM]"]
 async def PS_display_options(turn_context: TurnContext,option):
@@ -103,23 +96,23 @@ async def PS_display_options(turn_context: TurnContext,option):
         )
         reply = MessageFactory.attachment(CardFactory.hero_card(card))
     elif option == "[TPP]":
-        reply = querry(11)
+        reply = productsDict["[TPP]"]
     elif option == "[MUP]":
-        reply = querry(21)
+        reply = productsDict["[MUP]"]
     elif option == "[IP]":
-        reply = querry(31)
+        reply = productsDict["[IP]"]
     elif option == "[TP]":
-        reply = querry(41)
+        reply = productsDict["[TP]"]
     elif option == "[DNP]":
-        reply = querry(51)
+        reply = productsDict["[DNP]"]
     elif option == "[TMP]":
-        reply = querry(61)
+        reply = productsDict["[TMP]"]
     elif option == "[NSOP]":
-        reply = querry(71)
+        reply = productsDict["[NSOP]"]
     elif option == "[TPCP]":
-        reply = querry(81)
+        reply = productsDict["[TPCP]"]
     elif option == "[TEP]":
-        reply = querry(91)
+        reply = productsDict["[TEP]"]
     elif option == "[SERVICES]":
         card = HeroCard(
             text="Please choose one of the following options",
@@ -189,38 +182,29 @@ async def PS_display_options(turn_context: TurnContext,option):
         )
         reply = MessageFactory.attachment(CardFactory.hero_card(card))
     elif option == "[AAA]":
-        reply =  querry(101)
+        reply = servicesDict["[AAA]"]
     elif option == "[ESMP]":
-        reply = querry(111)
+        reply = servicesDict["[ESMP]"]
     elif option == "[TIP]":
-        reply = querry(111)
+        reply = servicesDict["[AAA]"]
     elif option == "[IPMI]":
-        reply = querry(121)
-    elif option == "[IPMI]":
-        reply = querry(131)
+        reply = servicesDict["[IPMI]"]
     elif option == "[HBM]":
-        reply = querry(141)
+        reply = servicesDict["[HBM]"]
     elif option == "[PBM]":
-        reply = querry(151)
+        reply = servicesDict["[PBM]"]
     elif option == "[ACTUARIAL]":
-        reply = querry(161)
+        reply = servicesDict["[ACTUARIAL]"]
     elif option == "[PM]":
-        reply = querry(171)
+        reply = servicesDict["[PM]"]
     elif option == "[MSM]":
-        reply = querry(181)
+        reply = servicesDict["[MSM]"]
     elif option == "[SM]":
-        reply = querry(191)
+        reply = servicesDict["[SM]"]
     elif option == "[ASM]":
-        reply = querry(201)
+        reply = servicesDict["[ASM]"]
     elif option == "[DDM]":
-        reply = querry(211)
+        reply = servicesDict["[DDM]"]
     else:
         reply = "<Under construction>"
     await turn_context.send_activity(reply)
-
-def querry(x):
-    mycursor = mydb.cursor()
-    sql = "SELECT description FROM products_services WHERE id = {}".format(x)
-    mycursor.execute(sql)
-    myresult = mycursor.fetchall()
-    return myresult[0][0]

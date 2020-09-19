@@ -88,8 +88,8 @@ def validate_date(user_input: str) -> ValidationResult:
         )
 def validate_phoneNum(user_input: str) -> ValidationResult:
     phoneNum = user_input
-    if (phoneNum[:2] in ["03","76","81","71","70"]) and (len(phoneNum) == 8):
+    if (phoneNum[:2] in ["03","76","81","71","70","78"]) and (len(phoneNum) == 8):
         return ValidationResult(is_valid=True, value=phoneNum)
     return ValidationResult(
-        is_valid=False, message="Your phone number should contain 8 numbers and start with 03, 70, 71, 66 or 81"
+        is_valid=False, message="Your phone number should contain 8 numbers and start with 03, 70, 71, 76, 78 or 81"
     )

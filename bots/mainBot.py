@@ -1,32 +1,26 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-from botbuilder.ai.qna import QnAMaker, QnAMakerEndpoint
-from botbuilder.core import ActivityHandler, MessageFactory, TurnContext
+from botbuilder.core import(
+    MessageFactory,
+    ActivityHandler,
+    TurnContext,
+    ConversationState,
+    UserState
+    )
 from botbuilder.schema import ChannelAccount, CardAction, ActionTypes, SuggestedActions
+from botbuilder.schema import ChannelAccount
+from botbuilder.ai.qna import QnAMaker, QnAMakerEndpoint
+from config import DefaultConfig
 from .customPrompt import *
 from .claim_prompt import *
-from config import DefaultConfig
-from botbuilder.core import (
-    ActivityHandler,
-    ConversationState,
-    TurnContext,
-    UserState,
-    MessageFactory,
-)
 from .healthcare import *
 from .productsAndServices import *
 import mysql.connector
 
-def createSQL():
-    mydb = mysql.connector.connect(
-  host= DefaultConfig.DB_ENDPOINT_HOST,
-  user =DefaultConfig.DB_ENDPOINT_USER,
-  password= DefaultConfig.DB_ENDPOINT_PSSWD,
-  database= DefaultConfig.DB_NAME)
-    return mydb
 
 class mainBot(ActivityHandler):
+    # See https://aka.ms/about-bot-activity-message to learn more about the message and other activity types.
     def __init__(self, config: DefaultConfig, conversation_state: ConversationState, user_state: UserState, promptInput = False,getClaim = False):
         self.qna_maker = QnAMaker(
             QnAMakerEndpoint(
@@ -50,7 +44,10 @@ class mainBot(ActivityHandler):
         self.user_state = user_state
 
         self.flow_accessor = self.conversation_state.create_property("ConversationFlow")
+        self.profile_accessor = self.user_state.create_property("UserProfile")   
+        self.flow_accessor = self.conversation_state.create_property("ConversationFlow")
         self.profile_accessor = self.user_state.create_property("UserProfile")      
+
     async def on_members_added_activity(self, members_added: [ChannelAccount], turn_context: TurnContext):
         for member in members_added:
             if member.id != turn_context.activity.recipient.id:
@@ -75,16 +72,9 @@ class mainBot(ActivityHandler):
                         CardAction(title="Claim Status",type=ActionTypes.im_back, value="[CS]")
                     ]
                 )
-                await turn_context.send_activity(reply)            
+                await turn_context.send_activity(reply)   
+
     async def on_message_activity(self, turn_context: TurnContext):
-        if (
-            turn_context.activity.attachments
-            and len(turn_context.activity.attachments) > 0
-        ):
-            await self._handle_incoming_attachment(turn_context)
-        else:
-            await self.handle_user_msg(turn_context)           
-    async def handle_user_msg(self, turn_context: TurnContext):
         msg = turn_context.activity.text
         if msg == "[BA]" or self.promptInput:
             self.promptInput = True
@@ -93,7 +83,6 @@ class mainBot(ActivityHandler):
             flow = await self.flow_accessor.get(turn_context, ConversationFlow)
 
             await self._fill_out_user_profile(flow, profile, turn_context)
-
             # Save changes to UserState and ConversationState
             await self.conversation_state.save_changes(turn_context)
             await self.user_state.save_changes(turn_context)
@@ -102,7 +91,6 @@ class mainBot(ActivityHandler):
             # Get the state properties from the turn context.
             profile = await self.profile_accessor.get(turn_context, ClientProfile)
             flow = await self.flow_accessor.get(turn_context, ClaimConversationFlow)
-
             await self._fill_out_client_profile(flow, profile, turn_context)
             # Save changes to UserState and ConversationState
             await self.conversation_state.save_changes(turn_context)
@@ -121,6 +109,7 @@ class mainBot(ActivityHandler):
                 await turn_context.send_activity(MessageFactory.text(response[0].answer))
             else:
                 await turn_context.send_activity("No QnA Maker answers were found.")
+
     async def _fill_out_user_profile(self, flow: ConversationFlow, profile: UserProfile, turn_context: TurnContext):
         user_input = turn_context.activity.text.strip()
 
@@ -210,6 +199,7 @@ class mainBot(ActivityHandler):
                 
                 mydb.close()
                 self.promptInput = False
+
     async def _fill_out_client_profile(self, flow: ClaimConversationFlow, profile: ClientProfile, turn_context: TurnContext):
         user_input = turn_context.activity.text.strip()
         # ask for claim number
@@ -267,3 +257,4 @@ class mainBot(ActivityHandler):
                 )
                 flow.last_question_asked = Question.NONE
                 self.getClaim = False
+  

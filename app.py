@@ -2,9 +2,9 @@
 # Licensed under the MIT License.
 
 import sys
+
 import traceback
 from datetime import datetime
-from http import HTTPStatus
 
 from aiohttp import web
 from aiohttp.web import Request, Response, json_response
@@ -33,7 +33,6 @@ MEMORY = MemoryStorage()
 USER_STATE = UserState(MEMORY)
 CONVERSATION_STATE = ConversationState(MEMORY)
 
-
 # Catch-all for errors.
 async def on_error(context: TurnContext, error: Exception):
     # This check writes out errors to console log .vs. app insights.
@@ -41,7 +40,7 @@ async def on_error(context: TurnContext, error: Exception):
     #       application insights.
     print(f"\n [on_turn_error] unhandled error: {error}", file=sys.stderr)
     traceback.print_exc()
-
+    await context.send_activity(f"\n [on_turn_error] unhandled error: {error}", file=sys.stderr)
     # Send a message to the user
     await context.send_activity("The bot encountered an error or bug.")
     await context.send_activity(
@@ -65,7 +64,7 @@ async def on_error(context: TurnContext, error: Exception):
 ADAPTER.on_turn_error = on_error
 
 # Create the Bot
-BOT = mainBot(CONFIG, CONVERSATION_STATE, USER_STATE)
+BOT = mainBot(CONFIG,CONVERSATION_STATE, USER_STATE)
 
 
 # Listen for incoming requests on /api/messages
@@ -74,15 +73,18 @@ async def messages(req: Request) -> Response:
     if "application/json" in req.headers["Content-Type"]:
         body = await req.json()
     else:
-        return Response(status=HTTPStatus.UNSUPPORTED_MEDIA_TYPE)
+        return Response(status=415)
 
     activity = Activity().deserialize(body)
     auth_header = req.headers["Authorization"] if "Authorization" in req.headers else ""
 
-    response = await ADAPTER.process_activity(activity, auth_header, BOT.on_turn)
-    if response:
-        return json_response(data=response.body, status=response.status)
-    return Response(status=HTTPStatus.OK)
+    try:
+        response = await ADAPTER.process_activity(activity, auth_header, BOT.on_turn)
+        if response:
+            return json_response(data=response.body, status=response.status)
+        return Response(status=201)
+    except Exception as exception:
+        raise exception
 
 
 APP = web.Application(middlewares=[aiohttp_error_middleware])
@@ -90,6 +92,6 @@ APP.router.add_post("/api/messages", messages)
 
 if __name__ == "__main__":
     try:
-        web.run_app(APP, host="http://0.0.0.0", port=CONFIG.PORT)
+        web.run_app(APP, host="localhost", port=CONFIG.PORT)
     except Exception as error:
         raise error
