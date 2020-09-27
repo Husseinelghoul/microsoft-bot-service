@@ -1,10 +1,10 @@
 # Insurance company ChatBot
-
+Insurance company chat-bot that answers questions, books appointment, retrieved information from SQL Database and uses Google Places API to get Hospitals and Pharmacies information.
 This bot has been created using [Bot Framework](https://dev.botframework.com).
 
 ## Prerequisites
 
-This samples **requires** prerequisites in order to run.
+This samples **requires** prerequisites in order to run, the required packages are found in requirements.txt
 
 ### Overview
 
